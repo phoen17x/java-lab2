@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="1" author="o.erokhin">
+        <createTable tableName="users">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(255)"/>
+            <column name="password" type="VARCHAR(255)"/>
+            <column name="role" type="VARCHAR(50)"/>
+        </createTable>
+
+        <createTable tableName="authors">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="bio" type="TEXT"/>
+        </createTable>
+
+        <createTable tableName="books">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)"/>
+            <column name="author_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_book_author" references="authors(id)"/>
+            </column>
+            <column name="published_date" type="DATE"/>
+        </createTable>
+
+        <createTable tableName="loans">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="book_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_loan_book" references="books(id)"/>
+            </column>
+            <column name="user_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_loan_user" references="users(id)"/>
+            </column>
+            <column name="loan_date" type="DATE"/>
+            <column name="return_date" type="DATE"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
