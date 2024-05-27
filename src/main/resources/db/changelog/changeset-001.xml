@@ -12,7 +12,6 @@
             </column>
             <column name="username" type="VARCHAR(255)"/>
             <column name="password" type="VARCHAR(255)"/>
-            <column name="role" type="VARCHAR(50)"/>
         </createTable>
 
         <createTable tableName="authors">
@@ -31,21 +30,49 @@
             <column name="author_id" type="INT">
                 <constraints nullable="false" foreignKeyName="fk_book_author" references="authors(id)"/>
             </column>
-            <column name="published_date" type="DATE"/>
         </createTable>
 
-        <createTable tableName="loans">
+        <createTable tableName="roles">
             <column name="id" type="SERIAL">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="book_id" type="INT">
-                <constraints nullable="false" foreignKeyName="fk_loan_book" references="books(id)"/>
-            </column>
-            <column name="user_id" type="INT">
-                <constraints nullable="false" foreignKeyName="fk_loan_user" references="users(id)"/>
-            </column>
-            <column name="loan_date" type="DATE"/>
-            <column name="return_date" type="DATE"/>
+            <column name="name" type="VARCHAR(50)"/>
         </createTable>
+
+        <createTable tableName="user_roles">
+            <column name="user_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_user_roles_user" references="users(id)"/>
+            </column>
+            <column name="role_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_user_roles_role" references="roles(id)"/>
+            </column>
+        </createTable>
+
+        <insert tableName="roles">
+            <column name="name" value="USER"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="name" value="ADMIN"/>
+        </insert>
+
+        <insert tableName="users">
+            <column name="username" value="user"/>
+            <column name="password" value="$2a$10$5SNCdbEp369XHyxDWUXdBOByEAu7rw9kfjz4m3S8AP6kHwiOf7c/6"/>
+        </insert>
+        <insert tableName="users">
+            <column name="username" value="admin"/>
+            <column name="password" value="$2a$10$EIH3mufuA7f8gDz/PbEjBeb8fvik/eegc44.EYQOtowuWWgd5eDtm"/>
+        </insert>
+
+        <insert tableName="user_roles">
+            <column name="user_id" value="1"/>
+            <column name="role_id" value="1"/>
+        </insert>
+
+        <insert tableName="user_roles">
+            <column name="user_id" value="2"/>
+            <column name="role_id" value="2"/>
+        </insert>
+
     </changeSet>
 </databaseChangeLog>
