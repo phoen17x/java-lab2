@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,7 +42,6 @@ public class BookServiceImplTest {
         Book book = new Book(1L, "Book Title", author);
 
         when(authorRepository.findById(dto.getAuthorId())).thenReturn(Optional.of(author));
-        when(bookRepository.save(any(Book.class))).thenReturn(book);
 
         // act
         Book createdBook = bookService.createBook(dto);
@@ -120,17 +120,18 @@ public class BookServiceImplTest {
     }
 
     @Test
-    public void givenNonExistingBookId_whenGetBookById_thenReturnNull() {
+    public void givenNonExistingBookId_whenGetBookById_thenThrowsNoSuchElementException() {
         // arrange
         Long bookId = 1L;
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
 
-        // act
-        Book retrievedBook = bookService.getBookById(bookId);
+        // act & assert
+        assertThrows(NoSuchElementException.class, () -> {
+            bookService.getBookById(bookId);
+        });
 
         // assert
-        assertNull(retrievedBook);
         verify(bookRepository).findById(bookId);
     }
 
@@ -145,7 +146,6 @@ public class BookServiceImplTest {
 
         when(bookRepository.findById(bookId)).thenReturn(Optional.of(existingBook));
         when(authorRepository.findById(dto.getAuthorId())).thenReturn(Optional.of(author));
-        when(bookRepository.save(any(Book.class))).thenReturn(updatedBook);
 
         // act
         Book result = bookService.updateBook(bookId, dto);
@@ -160,18 +160,21 @@ public class BookServiceImplTest {
     }
 
     @Test
-    public void givenNonExistingBookId_whenUpdateBook_thenReturnNull() {
+    public void givenNonExistingBookId_whenUpdateBook_thenThrowsNoSuchElementException() {
         // arrange
+        Long authorId = 1L;
+        Author author = new Author(1L, "John Doe", "Software Engineer");
         Long bookId = 1L;
         BookDto dto = new BookDto("Updated Book Title", 1L);
 
+        when(authorRepository.findById(authorId)).thenReturn(Optional.of(author));
         when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
 
-        // act
-        Book result = bookService.updateBook(bookId, dto);
+        // act & assert
+        assertThrows(NoSuchElementException.class, () -> {
+            bookService.updateBook(bookId, dto);
+        });
 
-        // assert
-        assertNull(result);
         verify(bookRepository).findById(bookId);
     }
 
@@ -193,20 +196,14 @@ public class BookServiceImplTest {
     }
 
     @Test
-    public void givenExistingBookId_whenDeleteBook_thenReturnTrue() {
+    public void givenExistingBookId_whenDeleteBook_thenDeletesIt() {
         // arrange
         Long bookId = 1L;
-        Author author = new Author(1L, "John Doe", "Software Engineer");
-        Book book = new Book(bookId, "Book Title", author);
-
-        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
 
         // act
-        boolean isDeleted = bookService.deleteBook(bookId);
+        bookService.deleteBook(bookId);
 
         // assert
-        assertTrue(isDeleted);
-        verify(bookRepository).findById(bookId);
         verify(bookRepository).deleteById(bookId);
     }
 
@@ -218,10 +215,9 @@ public class BookServiceImplTest {
         when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
 
         // act
-        boolean isDeleted = bookService.deleteBook(bookId);
+        bookService.deleteBook(bookId);
 
         // assert
-        assertFalse(isDeleted);
         verify(bookRepository).findById(bookId);
     }
 }

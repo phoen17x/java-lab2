@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,8 +36,6 @@ public class AuthorServiceImplTest {
         Author author = new Author();
         author.setName(dto.getName());
         author.setBio(dto.getBio());
-
-        when(authorRepository.save(any(Author.class))).thenReturn(author);
 
         // act
         Author createdAuthor = authorService.createAuthor(dto);
@@ -100,17 +99,17 @@ public class AuthorServiceImplTest {
     }
 
     @Test
-    public void givenNonExistingAuthorId_whenGetAuthorById_thenReturnNull() {
+    public void givenNonExistingAuthorId_whenGetAuthorById_thenThrowsNoSuchElementException() {
         // arrange
         Long authorId = 1L;
 
         when(authorRepository.findById(authorId)).thenReturn(Optional.empty());
 
-        // act
-        Author retrievedAuthor = authorService.getAuthorById(authorId);
+        // act & assert
+        assertThrows(NoSuchElementException.class, () -> {
+            authorService.getAuthorById(authorId);
+        });
 
-        // assert
-        assertNull(retrievedAuthor);
         verify(authorRepository).findById(authorId);
     }
 
@@ -122,7 +121,6 @@ public class AuthorServiceImplTest {
         AuthorDto dto = new AuthorDto("John Doe Updated", "Senior Software Engineer");
 
         when(authorRepository.findById(authorId)).thenReturn(Optional.of(existingAuthor));
-        when(authorRepository.save(any(Author.class))).thenReturn(existingAuthor);
 
         // act
         Author updatedAuthor = authorService.updateAuthor(authorId, dto);
@@ -132,27 +130,28 @@ public class AuthorServiceImplTest {
         assertEquals(dto.getName(), updatedAuthor.getName());
         assertEquals(dto.getBio(), updatedAuthor.getBio());
         verify(authorRepository).findById(authorId);
-        verify(authorRepository).save(any(Author.class));
+        verify(authorRepository).update(any(Author.class));
     }
 
     @Test
-    public void givenNonExistingAuthorId_whenUpdateAuthor_thenReturnNull() {
+    public void givenNonExistingAuthorId_whenUpdateAuthor_thenThrowsNoSuchElementException() {
         // arrange
         Long authorId = 1L;
         AuthorDto dto = new AuthorDto("John Doe Updated", "Senior Software Engineer");
 
         when(authorRepository.findById(authorId)).thenReturn(Optional.empty());
 
-        // act
-        Author updatedAuthor = authorService.updateAuthor(authorId, dto);
+        // act & assert
+        assertThrows(NoSuchElementException.class, () -> {
+            authorService.updateAuthor(authorId, dto);
+        });
 
         // assert
-        assertNull(updatedAuthor);
         verify(authorRepository).findById(authorId);
     }
 
     @Test
-    public void givenExistingAuthorId_whenDeleteAuthor_thenReturnTrue() {
+    public void givenExistingAuthorId_whenDeleteAuthor_thenDeletesIt() {
         // arrange
         Long authorId = 1L;
         Author author = new Author(authorId, "John Doe", "Software Engineer");
@@ -160,26 +159,25 @@ public class AuthorServiceImplTest {
         when(authorRepository.findById(authorId)).thenReturn(Optional.of(author));
 
         // act
-        boolean isDeleted = authorService.deleteAuthor(authorId);
+        authorService.deleteAuthor(authorId);
 
         // assert
-        assertTrue(isDeleted);
         verify(authorRepository).findById(authorId);
         verify(authorRepository).deleteById(authorId);
     }
 
     @Test
-    public void givenNonExistingAuthorId_whenDeleteAuthor_thenReturnFalse() {
+    public void givenNonExistingAuthorId_whenDeleteAuthor_thenThrowsNoSuchElementException() {
         // arrange
         Long authorId = 1L;
 
         when(authorRepository.findById(authorId)).thenReturn(Optional.empty());
 
-        // act
-        boolean isDeleted = authorService.deleteAuthor(authorId);
+        // act & assert
+        assertThrows(NoSuchElementException.class, () -> {
+            authorService.deleteAuthor(authorId);
+        });
 
-        // assert
-        assertFalse(isDeleted);
         verify(authorRepository).findById(authorId);
     }
 }

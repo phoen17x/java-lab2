@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -23,74 +22,53 @@ public class BookServiceImpl implements BookService {
 
     public Book createBook(BookDto dto) {
         log.info("Creating book: {}", dto);
-        Author author = authorRepository
-                .findById(dto.getAuthorId())
-                .orElseThrow(() -> {
-                    log.error("Author not found with id: {}", dto.getAuthorId());
-                    return new RuntimeException("Author not found");
-                });
 
+        Author author = authorRepository.findById(dto.getAuthorId()).orElseThrow();
         Book book = new Book();
         book.setTitle(dto.getTitle());
         book.setAuthor(author);
-        Book savedBook = bookRepository.save(book);
-        log.info("Book created: {}", savedBook);
-        return savedBook;
+        bookRepository.save(book);
+
+        log.info("Book created: {}", book);
+        return book;
     }
 
     public List<Book> getAllBooks() {
         log.info("Retrieving all books");
+
         List<Book> books = bookRepository.findAll();
+
         log.info("Retrieved {} books", books.size());
         return books;
     }
 
     public Book getBookById(Long id) {
         log.info("Retrieving book with id: {}", id);
-        Optional<Book> optionalBook = bookRepository.findById(id);
-        if (optionalBook.isPresent()) {
-            Book book = optionalBook.get();
-            log.info("Book found: {}", book);
-            return book;
-        } else {
-            log.info("Book with id {} not found", id);
-            return null;
-        }
+
+        Book book = bookRepository.findById(id).orElseThrow();
+
+        log.info("Book found: {}", book);
+        return book;
     }
 
     public Book updateBook(Long id, BookDto dto) {
         log.info("Updating book with id: {}, new data: {}", id, dto);
-        Optional<Book> optionalBook = bookRepository.findById(id);
-        if (optionalBook.isPresent()) {
-            Author author = authorRepository
-                    .findById(dto.getAuthorId())
-                    .orElseThrow(() -> {
-                        log.error("Author not found with id: {}", dto.getAuthorId());
-                        return new RuntimeException("Author not found");
-                    });
 
-            Book existingBook = optionalBook.get();
-            existingBook.setTitle(dto.getTitle());
-            existingBook.setAuthor(author);
-            Book updatedBook = bookRepository.save(existingBook);
-            log.info("Book updated: {}", updatedBook);
-            return updatedBook;
-        } else {
-            log.info("Book with id {} not found", id);
-            return null;
-        }
+        Author author = authorRepository.findById(dto.getAuthorId()).orElseThrow();
+        Book book = bookRepository.findById(id).orElseThrow();
+        book.setTitle(dto.getTitle());
+        book.setAuthor(author);
+        bookRepository.update(book);
+
+        log.info("Book updated: {}", book);
+        return book;
     }
 
-    public boolean deleteBook(Long id) {
+    public void deleteBook(Long id) {
         log.info("Deleting book with id: {}", id);
-        Optional<Book> optionalBook = bookRepository.findById(id);
-        if (optionalBook.isPresent()) {
-            bookRepository.deleteById(id);
-            log.info("Book with id {} deleted", id);
-            return true;
-        } else {
-            log.info("Book with id {} not found", id);
-            return false;
-        }
+
+        bookRepository.deleteById(id);
+
+        log.info("Book with id {} deleted", id);
     }
 }

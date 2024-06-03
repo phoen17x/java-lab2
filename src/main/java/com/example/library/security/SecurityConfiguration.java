@@ -42,6 +42,16 @@ public class SecurityConfiguration {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(configurer ->
+                        configurer
+                                .authenticationEntryPoint(((request, response, authException) -> {
+                                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                                    response.getWriter().write("Unauthorized!");
+                                }))
+                                .accessDeniedHandler(((request, response, accessDeniedException) -> {
+                                    response.setStatus(HttpStatus.FORBIDDEN.value());
+                                    response.getWriter().write("Access denied!");
+                                })))
                 .authorizeHttpRequests(configurer ->
                         configurer
                                 .requestMatchers("/api/v1/auth/**").permitAll()

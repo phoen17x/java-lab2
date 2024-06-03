@@ -32,16 +32,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse login(LoginRequest request) throws AuthenticationException {
         log.info("Attempting to login with username: {}", request.getUsername());
+
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 request.getUsername(),
                 request.getPassword()));
-        User user = userRepository
-                .findByUsername(request.getUsername())
-                .orElseThrow(() -> {
-                    log.error("User not found with username: {}", request.getUsername());
-                    return new RuntimeException("User not found");
-                });
+        User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
         String token = jwtManager.generate(user.getId(), user.getUsername(), user.getRoles());
+
         log.info("Login successful for user: {}", user.getUsername());
         return new LoginResponse(token);
     }
@@ -49,25 +46,20 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public RegisterResponse register(RegisterRequest request) {
         log.info("Attempting to register user: {}", request.getUsername());
+
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             log.error("User already exists: {}", request.getUsername());
             throw new RuntimeException("User already exists");
         }
 
+        Role userRole = roleRepository.findByName("USER").orElseThrow();
         User user = new User();
-        Role userRole = roleRepository
-                .findByName("USER")
-                .orElseThrow(() -> {
-                    log.error("Default role 'USER' not found");
-                    return new RuntimeException("Default role not found");
-                });
-
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.getRoles().add(userRole);
+        userRepository.save(user);
 
-        User savedUser = userRepository.save(user);
-        log.info("User registered: {}", savedUser.getUsername());
-        return new RegisterResponse(savedUser.getUsername(), savedUser.getRoles());
+        log.info("User registered: {}", user.getUsername());
+        return new RegisterResponse(user.getUsername(), user.getRoles());
     }
 }

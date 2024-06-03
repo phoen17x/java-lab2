@@ -1,7 +1,14 @@
 package com.example.library.repositories;
 
 import com.example.library.entities.Author;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AuthorRepository extends JpaRepository<Author, Long> {
+import java.util.List;
+import java.util.Optional;
+
+public interface AuthorRepository {
+    Optional<Author> findById(Long id);
+    List<Author> findAll();
+    void save(Author author);
+    void update(Author author);
+    void deleteById(Long id);
 }
